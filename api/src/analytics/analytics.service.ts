@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TrackEventDto } from './dto/track-event.dto';
+import { hasFeature } from '../plans/limits';
 
 @Injectable()
 export class AnalyticsService {
@@ -23,8 +24,9 @@ export class AnalyticsService {
     });
 
     if (dto.linkId) {
-      await this.prisma.link.update({
-        where: { id: dto.linkId },
+      // updateMany ignores missing/wrong-profile links instead of throwing 500
+      await this.prisma.link.updateMany({
+        where: { id: dto.linkId, profileId: profile.id },
         data: { clickCount: { increment: 1 } },
       });
     }
@@ -33,6 +35,13 @@ export class AnalyticsService {
   }
 
   async summaryForUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { plan: true, company: { include: { plan: true } } },
+    });
+    if (!hasFeature(user!, 'hasAnalytics')) {
+      throw new ForbiddenException('Tu plan no incluye analíticas. Actualiza a Grafi Pro.');
+    }
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) {
       throw new NotFoundException('Profile not found');

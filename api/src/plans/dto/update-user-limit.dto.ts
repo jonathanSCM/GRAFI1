@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateUserLimitDto {
   @IsOptional()
@@ -9,4 +9,8 @@ export class UpdateUserLimitDto {
   @IsInt()
   @Min(0)
   buttonLimitOverride?: number | null;
+
+  @IsOptional()
+  @IsDateString()
+  planExpiresAt?: string | null;
 }

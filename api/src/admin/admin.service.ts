@@ -32,6 +32,7 @@ export class AdminService {
       data: {
         ...(dto.planId !== undefined ? { planId: dto.planId } : {}),
         ...(dto.buttonLimitOverride !== undefined ? { buttonLimitOverride: dto.buttonLimitOverride } : {}),
+        ...(dto.planExpiresAt !== undefined ? { planExpiresAt: dto.planExpiresAt ? new Date(dto.planExpiresAt) : null } : {}),
       },
       include: { plan: true },
     });
@@ -88,7 +89,7 @@ export class AdminService {
       }
     }
 
-    const base = process.env.PUBLIC_BASE_URL ?? 'https://dominio.com';
+    const base = process.env.PUBLIC_BASE_URL ?? 'https://grafi.digital';
     const url = `${base}/${profile.slug}`;
 
     return this.prisma.card.upsert({

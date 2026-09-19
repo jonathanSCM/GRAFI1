@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCatalogItemDto } from './dto/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from './dto/update-catalog-item.dto';
+import { hasFeature } from '../plans/limits';
 
 @Injectable()
 export class CatalogService {
@@ -18,16 +19,32 @@ export class CatalogService {
   private async assertOwnership(userId: string, itemId: string) {
     const companyId = await this.getCompanyId(userId);
     const item = await this.prisma.catalogItem.findUnique({ where: { id: itemId } });
-    if (!item) {
-      throw new NotFoundException('Catalog item not found');
+    if (!item) throw new NotFoundException('Catalog item not found');
+    if (item.companyId !== companyId) throw new ForbiddenException();
+    return { item, companyId };
+  }
+
+  private async assertProfilesBelongToCompany(profileIds: string[], companyId: string) {
+    const count = await this.prisma.profile.count({
+      where: { id: { in: profileIds }, user: { companyId } },
+    });
+    if (count !== profileIds.length) {
+      throw new BadRequestException('Uno o más perfiles no pertenecen a esta empresa');
     }
-    if (item.companyId !== companyId) {
-      throw new ForbiddenException();
+  }
+
+  private async assertCatalogFeature(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { plan: true, company: { include: { plan: true } } },
+    });
+    if (!hasFeature(user!, 'hasCatalog')) {
+      throw new ForbiddenException('Tu plan no incluye catálogo. Actualiza a Grafi Empresa.');
     }
-    return item;
   }
 
   async list(userId: string) {
+    await this.assertCatalogFeature(userId);
     const companyId = await this.getCompanyId(userId);
     return this.prisma.catalogItem.findMany({
       where: { companyId },
@@ -37,7 +54,11 @@ export class CatalogService {
   }
 
   async create(userId: string, dto: CreateCatalogItemDto) {
+    await this.assertCatalogFeature(userId);
     const companyId = await this.getCompanyId(userId);
+    if (dto.assignedProfileIds?.length) {
+      await this.assertProfilesBelongToCompany(dto.assignedProfileIds, companyId);
+    }
     const count = await this.prisma.catalogItem.count({ where: { companyId } });
     return this.prisma.catalogItem.create({
       data: {
@@ -57,7 +78,10 @@ export class CatalogService {
   }
 
   async update(userId: string, itemId: string, dto: UpdateCatalogItemDto) {
-    await this.assertOwnership(userId, itemId);
+    const { companyId } = await this.assertOwnership(userId, itemId);
+    if (dto.assignedProfileIds?.length) {
+      await this.assertProfilesBelongToCompany(dto.assignedProfileIds, companyId);
+    }
     return this.prisma.catalogItem.update({
       where: { id: itemId },
       data: {

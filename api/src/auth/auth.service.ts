@@ -13,31 +13,27 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (existing) {
-      throw new ConflictException('Email already registered');
-    }
-
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        email: dto.email,
-        password: passwordHash,
-      },
-    });
-
-    return this.buildToken(user.id, user.email, user.role);
+    try {
+      const user = await this.prisma.user.create({
+        data: { name: dto.name, email: dto.email, password: passwordHash },
+      });
+      return this.buildToken(user.id, user.email, user.role);
+    } catch (e: any) {
+      if (e?.code === 'P2002') throw new ConflictException('Email already registered');
+      throw e;
+    }
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    // Compare even when user doesn't exist to prevent timing-based enumeration
+    const dummyHash = '$2b$10$invalidhashpaddingtomakeconstanttime000000000000000000000';
+    const valid = user
+      ? await bcrypt.compare(dto.password, user.password)
+      : await bcrypt.compare(dto.password, dummyHash).then(() => false);
 
-    const valid = await bcrypt.compare(dto.password, user.password);
-    if (!valid) {
+    if (!user || !valid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 

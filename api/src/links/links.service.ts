@@ -46,21 +46,20 @@ export class LinksService {
 
   async create(userId: string, dto: CreateLinkDto) {
     const profileId = await this.getOwnedProfileId(userId);
-    const count = await this.prisma.link.count({ where: { profileId } });
-
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { plan: true, company: { include: { plan: true } } },
     });
     const limit = effectiveButtonLimit(user!);
-    if (count >= limit) {
-      throw new ForbiddenException(
-        `Alcanzaste el límite de ${limit} botones de tu plan. Contacta a soporte para ampliarlo.`,
-      );
-    }
 
-    return this.prisma.link.create({
-      data: { ...dto, profileId, order: count },
+    return this.prisma.$transaction(async (tx) => {
+      const count = await tx.link.count({ where: { profileId } });
+      if (count >= limit) {
+        throw new ForbiddenException(
+          `Alcanzaste el límite de ${limit} botones de tu plan. Contacta a soporte para ampliarlo.`,
+        );
+      }
+      return tx.link.create({ data: { ...dto, profileId, order: count } });
     });
   }
 

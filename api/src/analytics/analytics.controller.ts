@@ -10,9 +10,10 @@ export class AnalyticsController {
   @Post(':slug/events')
   track(@Param('slug') slug: string, @Body() dto: TrackEventDto, @Req() req: any) {
     const ipHash = req.ip ? Buffer.from(req.ip).toString('base64') : undefined;
+    const ua: string | undefined = req.headers['user-agent'];
     return this.analyticsService.trackBySlug(slug, dto, {
       ipHash,
-      device: req.headers['user-agent'],
+      device: ua ? ua.slice(0, 512) : undefined,
     });
   }
 

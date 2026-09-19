@@ -1,15 +1,47 @@
+# Entorno local completo: docker compose up --build
+# En produccion (Coolify) la base de datos es un recurso aparte.
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: tarjetas
-      POSTGRES_PASSWORD: tarjetas
-      POSTGRES_DB: tarjetas
+      POSTGRES_USER: grafi
+      POSTGRES_PASSWORD: grafi
+      POSTGRES_DB: grafi
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  api:
+    build: ./api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://grafi:grafi@db:5432/grafi
+      JWT_SECRET: dev-secret-change-me
+      JWT_EXPIRES_IN: 7d
+      PORT: 3001
+      PUBLIC_API_URL: http://localhost:3001
+      PUBLIC_BASE_URL: http://localhost:3000
+      WEB_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    volumes:
+      - uploads:/app/uploads
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001/api
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
 volumes:
   db_data:
+  uploads:

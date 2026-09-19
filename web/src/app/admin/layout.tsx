@@ -2,7 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { getRole } from '@/lib/api';
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Usuarios', icon: '◷' },
@@ -13,6 +15,14 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || getRole() !== 'ADMIN') {
+      router.replace('/login');
+    }
+  }, [router]);
 
   return (
     <div className="flex bg-neutral-50">

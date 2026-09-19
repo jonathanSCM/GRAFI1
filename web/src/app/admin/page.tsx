@@ -41,6 +41,7 @@ export default function AdminUsersPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [editingLimit, setEditingLimit] = useState<string | null>(null);
   const [limitDraft, setLimitDraft] = useState({ planId: '', buttonLimitOverride: '' });
+  const [qrMsg, setQrMsg] = useState<string | null>(null);
 
   function load() {
     api<AdminUser[]>('/admin/users').then(setUsers);
@@ -87,9 +88,24 @@ export default function AdminUsersPage() {
 
   return (
     <div className="flex flex-col gap-8 max-w-4xl">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Usuarios</h1>
-        <p className="text-sm text-neutral-500 mt-1">{users.length} usuarios registrados</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Usuarios</h1>
+          <p className="text-sm text-neutral-500 mt-1">{users.length} usuarios registrados</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {qrMsg && <span className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-full px-3 py-1">{qrMsg}</span>}
+          <button
+            onClick={async () => {
+              setQrMsg(null);
+              const r = await api<{ updated: number }>('/qr/regenerate-all', { method: 'POST' });
+              setQrMsg(`QR regenerados: ${r.updated}`);
+            }}
+            className="text-xs border border-neutral-300 rounded-full px-3 py-1.5 hover:bg-neutral-100 transition"
+          >
+            Regenerar QRs
+          </button>
+        </div>
       </div>
 
       <form

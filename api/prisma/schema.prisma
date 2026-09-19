@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 enum Role {
@@ -63,6 +63,12 @@ enum EventType {
   SAVE_CONTACT_CLICK
 }
 
+enum BillingCycle {
+  LIFETIME
+  ANNUAL
+  CONTRACT
+}
+
 enum SubscriptionStatus {
   ACTIVE
   CANCELLED
@@ -94,9 +100,10 @@ model Company {
   buttonTextColor String?
   textColor       String?
 
-  planId    String?
-  plan      Plan?    @relation(fields: [planId], references: [id])
+  planId                    String?
+  plan                      Plan?    @relation(fields: [planId], references: [id])
   collaboratorLimitOverride Int?
+  planExpiresAt             DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -128,15 +135,17 @@ model CatalogItem {
 }
 
 model Plan {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  slug          String   @unique
-  priceMonthly  Decimal  @db.Decimal(10, 2)
-  maxButtons      Int      @default(5)
-  maxCollaborators Int     @default(1)
-  features      Json
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String       @id @default(cuid())
+  name             String       @unique
+  slug             String       @unique
+  priceMonthly     Decimal      @db.Decimal(10, 2)
+  priceBolivares   Decimal?     @db.Decimal(10, 2)
+  billingCycle     BillingCycle @default(ANNUAL)
+  maxButtons       Int          @default(5)
+  maxCollaborators Int          @default(1)
+  features         Json
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   users         User[]
   companies     Company[]
@@ -155,9 +164,10 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  planId    String?
-  plan      Plan?      @relation(fields: [planId], references: [id])
+  planId              String?
+  plan                Plan?      @relation(fields: [planId], references: [id])
   buttonLimitOverride Int?
+  planExpiresAt       DateTime?
 
   companyId String?
   company   Company?   @relation(fields: [companyId], references: [id])

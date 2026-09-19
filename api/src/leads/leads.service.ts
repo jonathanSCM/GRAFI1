@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
+import { hasFeature } from '../plans/limits';
 
 @Injectable()
 export class LeadsService {
@@ -24,10 +25,31 @@ export class LeadsService {
   }
 
   async listForUser(userId: string) {
-    const profile = await this.prisma.profile.findUnique({ where: { userId } });
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { plan: true, company: { include: { plan: true } } },
+    });
+    if (!hasFeature(user!, 'hasLeads')) {
+      throw new ForbiddenException('Tu plan no incluye captura de leads. Actualiza a Grafi Pro.');
     }
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException('Profile not found');
+    return this.prisma.lead.findMany({
+      where: { profileId: profile.id },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async exportForUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { plan: true, company: { include: { plan: true } } },
+    });
+    if (!hasFeature(user!, 'hasExportLeads')) {
+      throw new ForbiddenException('Tu plan no incluye exportación de leads. Actualiza a Grafi Pro.');
+    }
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException('Profile not found');
     return this.prisma.lead.findMany({
       where: { profileId: profile.id },
       orderBy: { createdAt: 'desc' },

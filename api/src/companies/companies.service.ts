@@ -74,7 +74,7 @@ export class CompaniesService {
     if (!company) {
       throw new NotFoundException('Company not found');
     }
-    await this.assertCollaboratorRoom(companyId);
+    // Admin can always assign — limit only applies to self-service (addUserToMyCompany)
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
       include: { company: true },

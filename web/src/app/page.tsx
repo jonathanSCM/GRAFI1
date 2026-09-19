@@ -140,28 +140,32 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative overflow-hidden lp-dotfield">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-24 sm:pt-24 sm:pb-32 grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center">
-          <div className="lp-rise">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-16 sm:pt-24 sm:pb-32 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
+          {/* Card mock: shown first on mobile, second on desktop */}
+          <div className="lp-rise order-first lg:order-last" style={{ animationDelay: '120ms' }}>
+            <CardMock />
+          </div>
+          <div className="lp-rise order-last lg:order-first">
             <span
               className="lp-mono inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] px-3 py-1.5 rounded-full"
               style={{ background: 'var(--signal-soft)', color: 'var(--signal-dark)' }}
             >
               NFC + QR · perfil editable
             </span>
-            <h1 className="lp-display mt-6 text-[2.4rem] sm:text-5xl lg:text-[3.4rem] leading-[1.05] font-semibold" style={{ color: 'var(--ink)' }}>
+            <h1 className="lp-display mt-5 text-[2rem] sm:text-5xl lg:text-[3.4rem] leading-[1.05] font-semibold" style={{ color: 'var(--ink)' }}>
               La última tarjeta que vas a necesitar en tu vida
             </h1>
-            <p className="mt-6 text-base sm:text-lg max-w-lg leading-relaxed" style={{ color: 'var(--ink-tint)' }}>
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg max-w-lg leading-relaxed" style={{ color: 'var(--ink-tint)' }}>
               Con <strong>Grafi.digital</strong> compartís tu WhatsApp, redes, portafolio, catálogo y
               datos profesionales con una tarjeta digital inteligente. Olvídate del papel: tu perfil
               se actualiza cuando quieras, desde tu panel.
             </p>
-            <div className="mt-9 flex flex-wrap items-center gap-4">
+            <div className="mt-7 sm:mt-9 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
               <a
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
                 style={{ background: 'var(--signal)', color: '#fff' }}
               >
                 Solicitar mi tarjeta
@@ -169,15 +173,12 @@ export default function Home() {
               </a>
               <a
                 href="#como-funciona"
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-semibold transition hover:opacity-70"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold transition hover:opacity-70"
                 style={{ color: 'var(--ink)' }}
               >
                 Ver cómo funciona
               </a>
             </div>
-          </div>
-          <div className="lp-rise" style={{ animationDelay: '120ms' }}>
-            <CardMock />
           </div>
         </div>
       </section>
@@ -312,7 +313,7 @@ export default function Home() {
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
+                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
                   style={{ border: '1.5px solid var(--ink)', color: 'var(--ink)' }}
                 >
                   Solicitar Plan Profesional
@@ -354,7 +355,7 @@ export default function Home() {
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
+                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
                   style={{ background: 'var(--signal)', color: '#fff' }}
                 >
                   Solicitar demo empresarial
@@ -477,12 +478,12 @@ export default function Home() {
             <p className="lp-mono text-xs uppercase tracking-[0.2em] mt-1" style={{ color: '#ff8a96' }}>
               Tu contacto, en un solo toque
             </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-10 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3 sm:gap-4">
               <a
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-7 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 lp-notch-sm text-sm font-semibold transition hover:-translate-y-0.5"
                 style={{ background: 'var(--signal)', color: '#fff' }}
               >
                 Solicitar ahora
@@ -492,7 +493,7 @@ export default function Home() {
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-white transition hover:opacity-70"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold text-white transition hover:opacity-70"
                 style={{ border: '1.5px solid rgba(247,243,234,0.4)' }}
               >
                 Hablar por WhatsApp
