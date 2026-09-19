@@ -35,6 +35,11 @@ export class ProfilesService {
     if (!profile || profile.user.status !== 'ACTIVE') {
       throw new NotFoundException('Profile not found');
     }
+    // Hide profile when plan has expired
+    const expiry = profile.user.company?.planExpiresAt ?? profile.user.planExpiresAt;
+    if (expiry && expiry < new Date()) {
+      throw new NotFoundException('Profile not found');
+    }
     const { user, ...rest } = profile;
     const saveContact = hasFeature(user, 'hasSaveContact');
     const links = saveContact

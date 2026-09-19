@@ -36,7 +36,7 @@ export default function CatalogManager({ collaborators }: { collaborators: Colla
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   function load() {
-    api<CatalogItem[]>('/companies/me/catalog').then(setItems);
+    api<CatalogItem[]>('/companies/me/catalog').then(setItems).catch(() => setItems([]));
   }
 
   useEffect(load, []);
@@ -225,7 +225,7 @@ export default function CatalogManager({ collaborators }: { collaborators: Colla
         {items.map((item) => (
           <div
             key={item.id}
-            className={`flex items-center justify-between border rounded-2xl px-4 py-3 bg-white transition ${
+            className={`flex flex-wrap items-center justify-between gap-y-2 border rounded-2xl px-4 py-3 bg-white transition ${
               item.isActive ? 'border-neutral-200' : 'border-neutral-100 opacity-50'
             }`}
           >
@@ -247,16 +247,16 @@ export default function CatalogManager({ collaborators }: { collaborators: Colla
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-sm">
+            <div className="flex items-center gap-1 text-sm ml-auto">
               <button
                 onClick={() => toggleActive(item)}
-                className="text-xs border border-neutral-300 rounded-full px-2.5 py-1 hover:bg-neutral-100 transition"
+                className="text-xs border border-neutral-300 rounded-full px-2.5 py-1.5 hover:bg-neutral-100 transition"
               >
                 {item.isActive ? 'Desactivar' : 'Activar'}
               </button>
               <button
                 onClick={() => remove(item)}
-                className="text-xs text-red-600 hover:bg-red-50 rounded-full px-2.5 py-1 transition"
+                className="text-xs text-red-600 hover:bg-red-50 rounded-full px-2.5 py-1.5 transition"
               >
                 Eliminar
               </button>

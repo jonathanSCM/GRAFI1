@@ -17,7 +17,7 @@ export default function CardPage() {
   const [data, setData] = useState<CardResponse | null>(null);
 
   useEffect(() => {
-    api<CardResponse>('/cards/me').then(setData);
+    api<CardResponse>('/cards/me').then(setData).catch(() => {});
   }, []);
 
   if (!data) return <p className="text-sm text-neutral-500">Cargando...</p>;

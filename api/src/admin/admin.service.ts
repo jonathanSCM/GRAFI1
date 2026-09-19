@@ -5,7 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { AdminUpdateCardDto } from '../cards/dto/admin-update-card.dto';
 import { UpdateUserLimitDto } from '../plans/dto/update-user-limit.dto';
-import { effectiveButtonLimit } from '../plans/limits';
+import { effectiveButtonLimit, effectiveSocialLinkLimit } from '../plans/limits';
 
 @Injectable()
 export class AdminService {
@@ -19,6 +19,7 @@ export class AdminService {
     return users.map(({ password, ...rest }) => ({
       ...rest,
       effectiveButtonLimit: effectiveButtonLimit(rest),
+      effectiveSocialLinkLimit: effectiveSocialLinkLimit(rest),
     }));
   }
 
@@ -32,6 +33,7 @@ export class AdminService {
       data: {
         ...(dto.planId !== undefined ? { planId: dto.planId } : {}),
         ...(dto.buttonLimitOverride !== undefined ? { buttonLimitOverride: dto.buttonLimitOverride } : {}),
+        ...(dto.socialLinkLimitOverride !== undefined ? { socialLinkLimitOverride: dto.socialLinkLimitOverride } : {}),
         ...(dto.planExpiresAt !== undefined ? { planExpiresAt: dto.planExpiresAt ? new Date(dto.planExpiresAt) : null } : {}),
       },
       include: { plan: true },

@@ -1,7 +1,7 @@
 'use client';
 
 import { resolveProfileStyle } from '@/lib/profile-style';
-import type { BackgroundType } from '@/lib/types';
+import type { BackgroundType, SocialLink } from '@/lib/types';
 
 interface PreviewProps {
   fullName: string;
@@ -18,13 +18,14 @@ interface PreviewProps {
   buttonTextColor: string;
   textColor: string;
   linkTitles: string[];
+  socialLinks: SocialLink[];
 }
 
 export default function LivePreview(props: PreviewProps) {
   const style = resolveProfileStyle(props);
 
   return (
-    <div className="sticky top-8">
+    <div className="w-full lg:w-auto lg:sticky lg:top-8 shrink-0">
       <div className="w-[280px] h-[580px] rounded-[2.5rem] border-8 border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden mx-auto">
         <div
           className="w-full h-full overflow-y-auto flex flex-col items-center gap-4 px-5 py-8"
@@ -58,6 +59,20 @@ export default function LivePreview(props: PreviewProps) {
             )}
             {props.bio && <p className="text-[11px] opacity-80 mt-1 px-2">{props.bio}</p>}
           </div>
+
+          {props.socialLinks.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {props.socialLinks.map((s) => (
+                <span
+                  key={s.id}
+                  className="text-[10px] px-2 py-1 rounded-full border opacity-90"
+                  style={{ borderColor: `${style.textColor}33` }}
+                >
+                  {s.platform}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="w-full flex flex-col gap-2 mt-2">
             {props.linkTitles.length === 0 && (

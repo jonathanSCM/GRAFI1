@@ -119,6 +119,27 @@
   animation: lp-card-float 6s ease-in-out infinite;
 }
 
+/* Flotación suave estilo item flotante — solo sube/baja, sin rotar */
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.lp-float {
+  animation: lp-float 4.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-float {
+    animation: none;
+  }
+}
+
 .lp-reveal {
   opacity: 0;
   transform: translateY(24px);

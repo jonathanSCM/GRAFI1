@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSocialLinkDto } from './dto/create-social-link.dto';
 import { UpdateSocialLinkDto } from './dto/update-social-link.dto';
+import { effectiveSocialLinkLimit } from '../plans/limits';
 
 @Injectable()
 export class SocialLinksService {
@@ -33,9 +34,27 @@ export class SocialLinksService {
   }
 
   async create(userId: string, dto: CreateSocialLinkDto) {
-    const profileId = await this.getOwnedProfileId(userId);
-    const count = await this.prisma.socialLink.count({ where: { profileId } });
-    return this.prisma.socialLink.create({ data: { ...dto, profileId, order: count } });
+    const [profile, user] = await Promise.all([
+      this.prisma.profile.findUnique({ where: { userId } }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          socialLinkLimitOverride: true,
+          plan: { select: { maxSocialLinks: true } },
+          company: { select: { plan: { select: { maxSocialLinks: true } } } },
+        },
+      }),
+    ]);
+    if (!profile) throw new NotFoundException('Profile not found');
+    if (!user) throw new NotFoundException('User not found');
+
+    const limit = effectiveSocialLinkLimit(user);
+    const count = await this.prisma.socialLink.count({ where: { profileId: profile.id } });
+    if (count >= limit) {
+      throw new BadRequestException(`Has alcanzado el límite de ${limit} redes sociales de tu plan.`);
+    }
+
+    return this.prisma.socialLink.create({ data: { ...dto, profileId: profile.id, order: count } });
   }
 
   async update(userId: string, id: string, dto: UpdateSocialLinkDto) {

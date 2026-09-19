@@ -2,11 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import type { Company, Profile, ProfileLink } from '@/lib/types';
+import type { Company, Profile, ProfileLink, SocialLink } from '@/lib/types';
 import PhotoUploader from './PhotoUploader';
 import SocialLinksManager from './SocialLinksManager';
 import ColorCustomizer, { CustomizationState, DEFAULT_CUSTOMIZATION } from '@/components/ColorCustomizer';
 import LivePreview from './LivePreview';
+
+// Convierte cualquier texto en un slug válido: sin acentos, minúsculas,
+// solo letras, números y guiones. Así el usuario nunca puede escribir uno inválido.
+function slugify(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // quita acentos (a -> a)
+    .toLowerCase()
+    .replace(/\s+/g, '-') // espacios -> guiones
+    .replace(/[^a-z0-9-]/g, '') // quita caracteres no permitidos
+    .replace(/-+/g, '-'); // colapsa guiones repetidos
+}
 
 export default function ProfileEditorPage() {
   const [exists, setExists] = useState(true);
@@ -22,9 +34,11 @@ export default function ProfileEditorPage() {
   const [photoStyle, setPhotoStyle] = useState<'COLOR' | 'BLACK_AND_WHITE'>('COLOR');
   const [customization, setCustomization] = useState<CustomizationState>(DEFAULT_CUSTOMIZATION);
   const [linkTitles, setLinkTitles] = useState<string[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [company, setCompany] = useState<Company | null>(null);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
+  const [slugError, setSlugError] = useState<string | null>(null);
 
   useEffect(() => {
     api<Profile>('/profiles/me')
@@ -51,17 +65,29 @@ export default function ProfileEditorPage() {
           textColor: p.textColor ?? DEFAULT_CUSTOMIZATION.textColor,
         });
         setLinkTitles(p.links.filter((l) => l.isActive).map((l: ProfileLink) => l.title));
+        setSocialLinks(p.socialLinks ?? []);
       })
       .catch(() => setExists(false));
   }, []);
 
   async function handleSubmit() {
-    if (!form.slug || !form.fullName) {
-      setMessage('Slug y nombre completo son obligatorios');
+    setSlugError(null);
+    setMessage(null);
+
+    if (!form.slug) {
+      setSlugError('La URL (slug) es obligatoria. Ej: juan-perez');
       return;
     }
+    if (!/^[a-z0-9-]+$/.test(form.slug)) {
+      setSlugError('La URL solo puede tener minúsculas, números y guiones. Ej: juan-perez');
+      return;
+    }
+    if (!form.fullName) {
+      setMessage({ text: 'El nombre completo es obligatorio', ok: false });
+      return;
+    }
+
     setSaving(true);
-    setMessage(null);
     try {
       const payload = {
         ...form,
@@ -77,29 +103,49 @@ export default function ProfileEditorPage() {
         await api('/profiles/me', { method: 'PATCH', body: JSON.stringify(payload) });
         setExists(true);
       }
-      setMessage('Guardado correctamente');
+      setMessage({ text: '✅ Guardado correctamente', ok: true });
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Error al guardar');
+      const text = err instanceof Error ? err.message : 'Error al guardar';
+      // Si el error viene del slug (p. ej. ya está en uso), lo mostramos en rojo bajo la casilla.
+      if (/slug|url/i.test(text)) {
+        setSlugError('Esa URL ya está en uso o no es válida. Prueba con otra. Ej: juan-perez');
+      } else {
+        setMessage({ text, ok: false });
+      }
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="flex gap-12 items-start max-w-5xl">
-      <div className="flex-1 flex flex-col gap-6">
+    <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-start max-w-5xl">
+      <div className="w-full lg:flex-1 flex flex-col gap-6">
         <h1 className="text-2xl font-semibold">Mi perfil</h1>
 
         <div className="flex flex-col gap-4">
           <label className="text-sm flex flex-col gap-1">
-            Slug (URL pública)
+            URL pública (slug)
             <input
               value={form.slug}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+              onChange={(e) => {
+                setSlugError(null);
+                setForm({ ...form, slug: slugify(e.target.value) });
+              }}
               disabled={exists}
               required
-              className="border border-neutral-300 rounded-xl px-3 py-2"
+              placeholder="ej: juan-perez"
+              className={`border rounded-xl px-3 py-2 ${
+                slugError ? 'border-red-500' : 'border-neutral-300'
+              } disabled:bg-neutral-100 disabled:text-neutral-500`}
             />
+            {slugError ? (
+              <span className="text-xs text-red-600 font-medium">{slugError}</span>
+            ) : (
+              <span className="text-xs text-neutral-500">
+                Tu tarjeta será <b>grafi.digital/{form.slug || 'tu-nombre'}</b>. Solo minúsculas,
+                números y guiones (sin espacios ni tildes).
+              </span>
+            )}
           </label>
 
           <label className="text-sm flex flex-col gap-1">
@@ -150,6 +196,15 @@ export default function ProfileEditorPage() {
           </label>
         </div>
 
+        {!exists && (
+          <div className="border-t border-neutral-200 pt-6">
+            <p className="text-sm text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3">
+              💡 Completa tu URL y nombre, y toca <b>Guardar</b>. Enseguida se desbloquea la
+              personalización: foto, logo, colores y redes.
+            </p>
+          </div>
+        )}
+
         {exists && (
           <>
             <div className="flex flex-col gap-3 border-t border-neutral-200 pt-6">
@@ -171,12 +226,16 @@ export default function ProfileEditorPage() {
             </div>
 
             <div className="border-t border-neutral-200 pt-6">
-              <SocialLinksManager />
+              <SocialLinksManager onItemsChange={setSocialLinks} />
             </div>
           </>
         )}
 
-        {message && <p className="text-sm">{message}</p>}
+        {message && (
+          <p className={`text-sm font-medium ${message.ok ? 'text-green-600' : 'text-red-600'}`}>
+            {message.text}
+          </p>
+        )}
 
         <button
           type="button"
@@ -196,6 +255,7 @@ export default function ProfileEditorPage() {
         photo={photo}
         photoStyle={photoStyle}
         linkTitles={linkTitles}
+        socialLinks={socialLinks}
         {...customization}
       />
     </div>

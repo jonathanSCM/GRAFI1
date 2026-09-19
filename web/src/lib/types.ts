@@ -46,6 +46,7 @@ export interface Profile {
   id: string;
   company?: Company | null;
   slug: string;
+  hasSaveContact?: boolean;
   fullName: string;
   position?: string | null;
   companyName?: string | null;

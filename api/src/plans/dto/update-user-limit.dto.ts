@@ -11,6 +11,11 @@ export class UpdateUserLimitDto {
   buttonLimitOverride?: number | null;
 
   @IsOptional()
+  @IsInt()
+  @Min(0)
+  socialLinkLimitOverride?: number | null;
+
+  @IsOptional()
   @IsDateString()
   planExpiresAt?: string | null;
 }

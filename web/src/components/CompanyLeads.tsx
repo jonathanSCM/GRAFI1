@@ -18,7 +18,7 @@ export default function CompanyLeads() {
   const [leads, setLeads] = useState<Lead[] | null>(null);
 
   useEffect(() => {
-    api<Lead[]>('/companies/me/leads').then(setLeads);
+    api<Lead[]>('/companies/me/leads').then(setLeads).catch(() => setLeads([]));
   }, []);
 
   function exportCsv() {
@@ -38,19 +38,20 @@ export default function CompanyLeads() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-sm text-neutral-500">Leads capturados por todos los colaboradores.</p>
         <button
           onClick={exportCsv}
           disabled={!leads || leads.length === 0}
-          className="text-sm border border-neutral-300 rounded-xl px-4 py-2 hover:bg-neutral-100 transition disabled:opacity-40"
+          className="text-sm border border-neutral-300 rounded-xl px-4 py-2 hover:bg-neutral-100 transition disabled:opacity-40 self-start sm:self-auto shrink-0"
         >
           Exportar CSV
         </button>
       </div>
 
       <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="text-left border-b border-neutral-200 bg-neutral-50">
               <th className="py-3 px-4 font-medium text-neutral-500 text-xs uppercase tracking-wide">Colaborador</th>
@@ -82,6 +83,7 @@ export default function CompanyLeads() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

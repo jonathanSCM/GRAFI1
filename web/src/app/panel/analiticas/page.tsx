@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
 
   useEffect(() => {
-    api<Summary>('/analytics/me/summary').then(setSummary);
+    api<Summary>('/analytics/me/summary').then(setSummary).catch(() => {});
   }, []);
 
   if (!summary) return <p className="text-sm text-neutral-500">Cargando...</p>;

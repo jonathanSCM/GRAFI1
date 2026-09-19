@@ -20,7 +20,7 @@ export default function PanelHome() {
     api<Profile>('/profiles/me')
       .then((p) => {
         setProfile(p);
-        api<Summary>('/analytics/me/summary').then(setSummary);
+        api<Summary>('/analytics/me/summary').then(setSummary).catch(() => {});
       })
       .catch((err) => setError(err.message));
   }, []);
@@ -61,7 +61,7 @@ export default function PanelHome() {
     <div className="flex flex-col gap-8 max-w-3xl">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Hola, {profile.fullName.split(' ')[0]} 👋</h1>
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex flex-wrap items-center gap-2 mt-2">
           <a
             href={`/${profile.slug}`}
             target="_blank"
@@ -98,7 +98,7 @@ export default function PanelHome() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link
           href="/panel/perfil"
           className="bg-white border border-neutral-200 rounded-2xl p-5 hover:border-neutral-400 transition"

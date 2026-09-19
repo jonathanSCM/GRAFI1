@@ -8,7 +8,7 @@ export class CardsService {
   constructor(private readonly prisma: PrismaService) {}
 
   private buildProfileUrl(slug: string) {
-    const base = process.env.PUBLIC_BASE_URL ?? 'https://dominio.com';
+    const base = process.env.PUBLIC_BASE_URL ?? 'https://grafi.digital';
     return `${base}/${slug}`;
   }
 

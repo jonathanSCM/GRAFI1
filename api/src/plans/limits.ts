@@ -6,6 +6,14 @@ export function effectiveButtonLimit(user: {
   return user.buttonLimitOverride ?? user.company?.plan?.maxButtons ?? user.plan?.maxButtons ?? 5;
 }
 
+export function effectiveSocialLinkLimit(user: {
+  socialLinkLimitOverride?: number | null;
+  plan: { maxSocialLinks: number } | null;
+  company?: { plan: { maxSocialLinks: number } | null } | null;
+}): number {
+  return user.socialLinkLimitOverride ?? user.company?.plan?.maxSocialLinks ?? user.plan?.maxSocialLinks ?? 10;
+}
+
 export function effectiveCollaboratorLimit(company: {
   collaboratorLimitOverride: number | null;
   plan: { maxCollaborators: number } | null;

@@ -80,7 +80,10 @@ CREATE TABLE "plans" (
     "priceMonthly" DECIMAL(10,2) NOT NULL,
     "priceBolivares" DECIMAL(10,2),
     "billingCycle" "BillingCycle" NOT NULL DEFAULT 'ANNUAL',
+    "durationLabel" TEXT,
+    "durationMonths" INTEGER,
     "maxButtons" INTEGER NOT NULL DEFAULT 5,
+    "maxSocialLinks" INTEGER NOT NULL DEFAULT 10,
     "maxCollaborators" INTEGER NOT NULL DEFAULT 1,
     "features" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -101,6 +104,7 @@ CREATE TABLE "users" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "planId" TEXT,
     "buttonLimitOverride" INTEGER,
+    "socialLinkLimitOverride" INTEGER,
     "planExpiresAt" TIMESTAMP(3),
     "companyId" TEXT,
 

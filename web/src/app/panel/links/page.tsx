@@ -24,8 +24,8 @@ export default function LinksPage() {
   const [limit, setLimit] = useState<{ count: number; limit: number } | null>(null);
 
   function load() {
-    api<ProfileLink[]>('/links').then(setLinks);
-    api<{ count: number; limit: number }>('/links/limit').then(setLimit);
+    api<ProfileLink[]>('/links').then(setLinks).catch(() => setLinks([]));
+    api<{ count: number; limit: number }>('/links/limit').then(setLimit).catch(() => setLimit(null));
   }
 
   useEffect(load, []);
@@ -258,7 +258,7 @@ export default function LinksPage() {
         {links.map((link, i) => (
           <div
             key={link.id}
-            className={`flex items-center justify-between border rounded-2xl px-4 py-3 bg-white transition ${
+            className={`flex flex-wrap items-center justify-between gap-y-2 border rounded-2xl px-4 py-3 bg-white transition ${
               link.isActive ? 'border-neutral-200' : 'border-neutral-100 opacity-50'
             }`}
           >
@@ -271,28 +271,30 @@ export default function LinksPage() {
                 <p className="text-xs text-neutral-500 mt-0.5">{link.clickCount} clics</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-sm">
+            <div className="flex items-center gap-1 text-sm ml-auto">
               <button
                 onClick={() => move(i, -1)}
-                className="w-7 h-7 rounded-lg hover:bg-neutral-100 transition flex items-center justify-center"
+                aria-label="Subir"
+                className="w-9 h-9 rounded-lg hover:bg-neutral-100 transition flex items-center justify-center"
               >
                 ↑
               </button>
               <button
                 onClick={() => move(i, 1)}
-                className="w-7 h-7 rounded-lg hover:bg-neutral-100 transition flex items-center justify-center"
+                aria-label="Bajar"
+                className="w-9 h-9 rounded-lg hover:bg-neutral-100 transition flex items-center justify-center"
               >
                 ↓
               </button>
               <button
                 onClick={() => toggleActive(link)}
-                className="text-xs border border-neutral-300 rounded-full px-2.5 py-1 hover:bg-neutral-100 transition ml-1"
+                className="text-xs border border-neutral-300 rounded-full px-2.5 py-1.5 hover:bg-neutral-100 transition ml-1"
               >
                 {link.isActive ? 'Desactivar' : 'Activar'}
               </button>
               <button
                 onClick={() => remove(link)}
-                className="text-xs text-red-600 hover:bg-red-50 rounded-full px-2.5 py-1 transition"
+                className="text-xs text-red-600 hover:bg-red-50 rounded-full px-2.5 py-1.5 transition"
               >
                 Eliminar
               </button>

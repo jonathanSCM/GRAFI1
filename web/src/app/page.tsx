@@ -4,22 +4,26 @@ import { Unbounded, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import {
   ArrowRight,
   BarChart3,
+  BookOpen,
   Briefcase,
   Building2,
   Check,
+  CircleUserRound,
   Contact,
+  FolderKanban,
   Globe,
   Layers,
   Palette,
   QrCode,
   SmartphoneNfc,
+  Tag,
   Users,
   Zap,
 } from 'lucide-react';
 import LinkIcon from '@/components/LinkIcon';
 import Reveal from '@/components/landing/Reveal';
 import FaqAccordion from '@/components/landing/FaqAccordion';
-import CardMock from '@/components/landing/CardMock';
+import { FAQS } from '@/components/landing/faqs';
 import './landing.css';
 
 const display = Unbounded({ subsets: ['latin'], weight: ['500', '600', '800'], variable: '--font-lp-display' });
@@ -27,6 +31,11 @@ const body = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], 
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-lp-mono' });
 
 const WHATSAPP_LINK = 'https://wa.me/59162095357';
+
+const getWhatsAppLink = (message: string) => {
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/59162095357?text=${encodedMessage}`;
+};
 
 const INCLUDES = [
   { icon: SmartphoneNfc, label: 'Tarjeta NFC personalizada' },
@@ -47,7 +56,11 @@ const STEPS = [
   { n: '04', title: 'Mide tus resultados', text: 'Desde tu panel ves visitas, clics, interacciones y contactos generados.' },
 ];
 
-const CHANNELS: { type: Parameters<typeof LinkIcon>[0]['type']; label: string }[] = [
+type Channel =
+  | { type: Parameters<typeof LinkIcon>[0]['type']; label: string; icon?: never }
+  | { icon: typeof BookOpen; label: string; type?: never };
+
+const CHANNELS: Channel[] = [
   { type: 'WHATSAPP', label: 'WhatsApp' },
   { type: 'CALL', label: 'Teléfono' },
   { type: 'EMAIL', label: 'Email' },
@@ -55,7 +68,9 @@ const CHANNELS: { type: Parameters<typeof LinkIcon>[0]['type']; label: string }[
   { type: 'FACEBOOK', label: 'Facebook' },
   { type: 'LINKEDIN', label: 'LinkedIn' },
   { type: 'WEBSITE', label: 'Sitio web' },
-  { type: 'PROJECTS', label: 'Portafolio / catálogo' },
+  { type: 'PROJECTS', label: 'Portafolio' },
+  { icon: BookOpen, label: 'Catálogo' },
+  { icon: FolderKanban, label: 'Proyectos' },
   { type: 'SCHEDULE_MEETING', label: 'Agenda de reuniones' },
   { type: 'SAVE_CONTACT', label: 'Guardar contacto' },
 ];
@@ -76,6 +91,30 @@ const PROFESIONAL_FEATURES = [
   'Exportación de leads',
 ];
 
+const PROFESIONAL_IDEAL = [
+  'Consultores',
+  'Vendedores',
+  'Agentes inmobiliarios',
+  'Emprendedores',
+  'Ejecutivos',
+  'Abogados',
+  'Médicos',
+  'Freelancers',
+  'Creadores de marca personal',
+];
+
+const EMPRESA_IDEAL = [
+  'Inmobiliarias',
+  'Concesionarias',
+  'Constructoras',
+  'Clínicas',
+  'Estudios jurídicos',
+  'Agencias',
+  'Instituciones educativas',
+  'Equipos comerciales',
+  'Empresas B2B',
+];
+
 const EMPRESA_FEATURES = [
   'Todo lo del Plan Profesional',
   'Panel de empresa',
@@ -88,6 +127,30 @@ const EMPRESA_FEATURES = [
   'Asignación de productos o proyectos',
   'Soporte prioritario',
 ];
+
+const PRICING = [
+  {
+    slug: 'basico',
+    name: 'Grafi Básico',
+    amount: '150',
+    note: 'pago único · de por vida',
+    features: ['Perfil digital básico', 'NFC + QR dinámico', 'WhatsApp, teléfono, email', 'Redes sociales', 'Panel de edición'],
+    message: 'Hola, quiero solicitar el Plan Grafi Básico (Bs. 150 pago único).',
+  },
+  {
+    slug: 'pro',
+    name: 'Grafi Pro',
+    amount: '150',
+    note: 'por año · renovación anual',
+    badge: 'Más popular',
+    featured: true,
+    features: ['Todo lo del Básico', 'Guardar contacto', 'Catálogo / servicios', 'Captación de leads', 'Exportar leads', 'Analíticas completas'],
+    message: 'Hola, quiero solicitar el Plan Grafi Pro (Bs. 150/año).',
+  },
+];
+
+const EMPRESA_WA_MESSAGE =
+  'Hola, quiero información sobre los planes Grafi Empresa para equipos y organizaciones.';
 
 const BENEFITS = [
   { icon: Zap, title: 'Sin tarjetas desactualizadas', text: 'Edita tu perfil las veces que quieras sin volver a imprimir tarjetas.' },
@@ -118,20 +181,55 @@ const USE_CASES = [
   { icon: Users, title: 'Para empresas', text: 'Administra perfiles digitales de colaboradores y mide el rendimiento de tu equipo.' },
 ];
 
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'Grafi',
+      url: 'https://grafi.digital',
+      logo: 'https://grafi.digital/brand-icon.png',
+      description:
+        'Tarjetas digitales inteligentes NFC + QR con perfil profesional editable, analíticas y captación de leads.',
+      slogan: 'Tu contacto, en un solo toque',
+    },
+    {
+      '@type': 'Product',
+      name: 'Tarjeta digital NFC Grafi',
+      brand: { '@type': 'Brand', name: 'Grafi' },
+      description:
+        'Tarjeta NFC física con código QR dinámico y perfil digital editable para compartir WhatsApp, redes sociales, portafolio y catálogo con un solo toque.',
+      image: 'https://grafi.digital/hero-product.png',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: FAQS.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div className={`${display.variable} ${body.variable} ${mono.variable} lp`}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* Top bar */}
-      <header className="sticky top-0 z-40 backdrop-blur-md" style={{ background: 'rgba(247,243,234,0.82)', borderBottom: '1px solid var(--line-soft)' }}>
+      <header className="sticky top-0 z-40 backdrop-blur-md" style={{ background: '#001b36', borderBottom: '1px solid rgba(247,243,234,0.12)' }}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image src="/brand-icon.png" alt="Grafi" width={30} height={30} className="rounded-lg" />
-            <span className="lp-display text-sm tracking-wide" style={{ color: 'var(--ink)' }}>GRAFI</span>
+            <span className="lp-display text-sm tracking-wide" style={{ color: '#fff' }}>GRAFI</span>
           </div>
           <Link
             href="/login"
             className="text-sm font-medium px-4 py-2 rounded-full transition hover:opacity-80"
-            style={{ border: '1px solid var(--line)', color: 'var(--ink)' }}
+            style={{ border: '1px solid rgba(247,243,234,0.3)', color: '#fff' }}
           >
             Iniciar sesión
           </Link>
@@ -141,9 +239,16 @@ export default function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden lp-dotfield">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-16 sm:pt-24 sm:pb-32 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
-          {/* Card mock: shown first on mobile, second on desktop */}
-          <div className="lp-rise order-first lg:order-last" style={{ animationDelay: '120ms' }}>
-            <CardMock />
+          {/* Render del producto: primero en mobile, segundo en desktop */}
+          <div className="lp-rise order-first lg:order-last flex justify-center" style={{ animationDelay: '120ms' }}>
+            <Image
+              src="/hero-product.png"
+              alt="Tarjeta NFC Grafi con código QR, perfil digital y panel de analíticas"
+              width={918}
+              height={874}
+              priority
+              className="lp-float w-full max-w-[340px] sm:max-w-[440px] lg:max-w-[520px] h-auto"
+            />
           </div>
           <div className="lp-rise order-last lg:order-first">
             <span
@@ -262,12 +367,12 @@ export default function Home() {
 
         <div className="mt-12 flex flex-wrap gap-3">
           {CHANNELS.map((c, i) => (
-            <Reveal key={c.type} delay={i * 35}>
+            <Reveal key={c.label} delay={i * 35}>
               <div
                 className="flex items-center gap-2.5 px-4 py-2.5 rounded-full text-sm font-medium"
                 style={{ border: '1px solid var(--line)', color: 'var(--ink)' }}
               >
-                <LinkIcon type={c.type} className="w-4 h-4" />
+                {c.type ? <LinkIcon type={c.type} className="w-4 h-4" /> : <c.icon className="w-4 h-4" />}
                 {c.label}
               </div>
             </Reveal>
@@ -309,6 +414,20 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
+                <p className="lp-mono mt-7 text-[10px] uppercase tracking-[0.18em]" style={{ color: 'var(--signal-dark)' }}>
+                  Ideal para
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {PROFESIONAL_IDEAL.map((p) => (
+                    <span
+                      key={p}
+                      className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{ border: '1px solid var(--line)', color: 'var(--ink-tint)' }}
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
                 <a
                   href={WHATSAPP_LINK}
                   target="_blank"
@@ -351,6 +470,20 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
+                <p className="lp-mono mt-7 text-[10px] uppercase tracking-[0.18em]" style={{ color: '#ff8a96' }}>
+                  Ideal para
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {EMPRESA_IDEAL.map((p) => (
+                    <span
+                      key={p}
+                      className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{ border: '1px solid rgba(247,243,234,0.25)', color: 'rgba(247,243,234,0.75)' }}
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
                 <a
                   href={WHATSAPP_LINK}
                   target="_blank"
@@ -359,6 +492,165 @@ export default function Home() {
                   style={{ background: 'var(--signal)', color: '#fff' }}
                 >
                   Solicitar demo empresarial
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* PRECIOS */}
+          <div className="mt-16">
+            <Reveal>
+              <h3 className="lp-display text-3xl sm:text-4xl text-center" style={{ color: 'var(--ink)' }}>
+                Planes y precios
+              </h3>
+              <p className="mt-3 text-center text-sm" style={{ color: 'var(--ink-tint)' }}>
+                Pago anual · incluye tarjeta NFC física
+              </p>
+            </Reveal>
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {PRICING.map((p, i) => (
+                <Reveal key={p.slug} delay={i * 70}>
+                  <a
+                    href={getWhatsAppLink(p.message)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="relative h-full pt-3 block transition hover:-translate-y-0.5"
+                  >
+                    <div className="relative h-full">
+                      {p.badge && (
+                        <span
+                          className="lp-mono absolute top-0 left-1/2 -translate-x-1/2 z-10 text-[10px] uppercase tracking-[0.18em] px-3 py-1 rounded-full whitespace-nowrap"
+                          style={{ background: 'var(--signal)', color: '#fff' }}
+                        >
+                          {p.badge}
+                        </span>
+                      )}
+                      <div
+                        className="h-full p-6 pt-7 lp-notch-sm flex flex-col gap-3 cursor-pointer"
+                        style={{
+                          background: '#001b36',
+                          border: p.featured ? '1.5px solid var(--signal)' : '1px solid rgba(247,243,234,0.12)',
+                        }}
+                      >
+                        <span className="lp-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: p.featured ? 'var(--signal)' : 'rgba(247,243,234,0.55)' }}>
+                          {p.name}
+                        </span>
+                        <div>
+                          <span
+                            className="lp-display text-3xl"
+                            style={{ color: p.featured ? 'var(--signal)' : '#fff' }}
+                          >
+                            <span className="text-base mr-1">Bs.</span>
+                            {p.amount}
+                          </span>
+                          <span className="block text-xs mt-1" style={{ color: 'rgba(247,243,234,0.55)' }}>
+                            {p.note}
+                          </span>
+                        </div>
+                        <ul className="flex-1 flex flex-col gap-2 mt-2">
+                          {p.features.map((f) => (
+                            <li key={f} className="flex items-start gap-2 text-xs" style={{ color: 'rgba(247,243,234,0.8)' }}>
+                              <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: p.featured ? 'var(--signal)' : 'rgba(247,243,234,0.5)' }} />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        <div
+                          className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 lp-notch-sm text-xs font-semibold"
+                          style={{ background: p.featured ? 'var(--signal)' : 'rgba(247,243,234,0.1)', color: '#fff' }}
+                        >
+                          Solicitar
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </Reveal>
+              ))}
+              {/* Empresa */}
+              <Reveal delay={140}>
+                <div className="h-full pt-3">
+                  <div
+                    className="h-full p-6 pt-7 lp-notch-sm flex flex-col gap-3"
+                    style={{ background: '#001b36', border: '1px solid rgba(247,243,234,0.12)' }}
+                  >
+                    <span className="lp-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(247,243,234,0.55)' }}>
+                      Grafi Empresa
+                    </span>
+                    <div>
+                      <span className="lp-display text-3xl text-white">A medida</span>
+                      <span className="block text-xs mt-1" style={{ color: 'rgba(247,243,234,0.55)' }}>
+                        desde Bs. 300/mes · contrato anual
+                      </span>
+                    </div>
+                    <ul className="flex-1 flex flex-col gap-2 mt-2">
+                      {['Panel de empresa', 'Múltiples colaboradores', 'Leads centralizados', 'Catálogo corporativo', 'Soporte prioritario'].map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-xs" style={{ color: 'rgba(247,243,234,0.8)' }}>
+                          <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'rgba(247,243,234,0.5)' }} />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <a
+                      href={getWhatsAppLink(EMPRESA_WA_MESSAGE)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 lp-notch-sm text-xs font-semibold transition hover:-translate-y-0.5"
+                      style={{ background: 'rgba(247,243,234,0.1)', color: '#fff' }}
+                    >
+                      Consultar
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+            <Reveal delay={120}>
+              <div
+                className="mt-4 p-5 sm:px-8 lp-notch-sm flex items-center gap-4 sm:gap-5"
+                style={{ background: '#001b36', border: '1px solid rgba(247,243,234,0.12)' }}
+              >
+                <span
+                  className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+                  style={{ border: '1.5px solid var(--signal)' }}
+                >
+                  <Tag className="w-5 h-5 -rotate-45" style={{ color: 'var(--signal)' }} />
+                </span>
+                <div>
+                  <p className="text-sm sm:text-base font-semibold text-white">
+                    Personalización de la tarjeta:{' '}
+                    <span style={{ color: 'var(--signal)' }}>+ Bs. 49</span>
+                  </p>
+                  <p className="mt-0.5 text-xs sm:text-sm" style={{ color: 'rgba(247,243,234,0.7)' }}>
+                    Incluye nombre, logo, colores y diseño personalizado.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+            <Reveal delay={180}>
+              <div
+                className="mt-4 p-5 sm:px-8 lp-notch-sm flex flex-col sm:flex-row items-center gap-4 sm:gap-5"
+                style={{ background: '#001b36', border: '1px solid rgba(247,243,234,0.12)' }}
+              >
+                <span
+                  className="w-12 h-12 rounded-full hidden sm:flex items-center justify-center shrink-0"
+                  style={{ border: '1.5px solid rgba(247,243,234,0.4)' }}
+                >
+                  <CircleUserRound className="w-5 h-5 text-white" />
+                </span>
+                <p className="flex-1 text-sm sm:text-base text-white text-center sm:text-left leading-relaxed">
+                  Ideal para profesionales, vendedores, emprendedores, inmobiliarias y equipos
+                  comerciales.
+                </p>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 lp-notch-sm text-sm font-semibold whitespace-nowrap transition hover:-translate-y-0.5 w-full sm:w-auto"
+                  style={{ background: 'var(--signal)', color: '#fff' }}
+                >
+                  Solicita una demo
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
@@ -513,9 +805,19 @@ export default function Home() {
           <p className="text-xs" style={{ color: 'rgba(247,243,234,0.45)' }}>
             © {new Date().getFullYear()} Grafi. Tu contacto, en un solo toque.
           </p>
-          <Link href="/login" className="text-xs text-white/70 hover:text-white transition">
-            Iniciar sesión →
-          </Link>
+          <div className="flex items-center gap-5">
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-white/70 hover:text-white transition"
+            >
+              WhatsApp
+            </a>
+            <Link href="/login" className="text-xs text-white/70 hover:text-white transition">
+              Iniciar sesión →
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

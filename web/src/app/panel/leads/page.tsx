@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import { downloadCsv } from '@/lib/csv';
+import { api, getToken } from '@/lib/api';
 
 interface Lead {
   id: string;
@@ -24,23 +23,30 @@ export default function LeadsPage() {
       .catch((err) => setError(err.message));
   }, []);
 
-  function exportCsv() {
-    if (!leads) return;
-    downloadCsv(
-      `leads-${new Date().toISOString().slice(0, 10)}.csv`,
-      leads.map((l) => ({
-        Nombre: l.name,
-        Email: l.email ?? '',
-        Teléfono: l.phone ?? '',
-        Mensaje: l.message ?? '',
-        Fecha: new Date(l.createdAt).toLocaleString(),
-      })),
-    );
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+
+  async function exportCsv() {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/leads/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.message ?? 'Error al exportar');
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Leads</h1>
           <p className="text-sm text-neutral-500 mt-1">
@@ -50,7 +56,7 @@ export default function LeadsPage() {
         <button
           onClick={exportCsv}
           disabled={!leads || leads.length === 0}
-          className="text-sm border border-neutral-300 rounded-xl px-4 py-2 hover:bg-neutral-100 transition disabled:opacity-40"
+          className="text-sm border border-neutral-300 rounded-xl px-4 py-2 hover:bg-neutral-100 transition disabled:opacity-40 self-start sm:self-auto shrink-0"
         >
           Exportar CSV
         </button>
@@ -59,7 +65,8 @@ export default function LeadsPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="text-left border-b border-neutral-200 bg-neutral-50">
               <th className="py-3 px-4 font-medium text-neutral-500 text-xs uppercase tracking-wide">Nombre</th>
@@ -91,6 +98,7 @@ export default function LeadsPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

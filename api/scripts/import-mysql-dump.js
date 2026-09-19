@@ -38,7 +38,7 @@ function parseValues(text, start) {
         let s = ''; i++;
         for (;;) {
           const c = text[i];
-          if (c === '\') {
+          if (c === '\\') {
             const e = text[i + 1];
             s += { n: '\n', r: '\r', t: '\t', '0': '\0', b: '\b', Z: '\x1a' }[e] ?? e;
             i += 2;

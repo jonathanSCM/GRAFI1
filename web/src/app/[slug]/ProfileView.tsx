@@ -54,17 +54,20 @@ export default function ProfileView({ profile }: { profile: Profile }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [pdfViewer, setPdfViewer] = useState<{ url: string; title: string } | null>(null);
 
+  const canSaveContact = profile.hasSaveContact !== false;
+
   useEffect(() => {
     trackEvent(profile.slug, 'PROFILE_VIEW');
     setHost(window.location.host);
 
+    if (!canSaveContact) return;
     const key = `grafi_save_contact_dismissed_${profile.slug}`;
     const dismissed = localStorage.getItem(key) === '1';
     if (!dismissed) {
       const timer = setTimeout(() => setModalOpen(true), 700);
       return () => clearTimeout(timer);
     }
-  }, [profile.slug]);
+  }, [profile.slug, canSaveContact]);
 
   function closeModal() {
     localStorage.setItem(`grafi_save_contact_dismissed_${profile.slug}`, '1');
@@ -165,18 +168,20 @@ export default function ProfileView({ profile }: { profile: Profile }) {
           ))}
         </div>
 
-        <button
-          onClick={() => setModalOpen(true)}
-          className="w-full rounded-2xl border py-3.5 px-4 text-sm font-medium transition active:scale-[0.98] hover:opacity-90 shadow-sm flex items-center justify-center gap-2 mt-2"
-          style={{
-            backgroundColor: style.buttonBackground,
-            borderColor: style.buttonBorder,
-            color: style.buttonTextColor,
-          }}
-        >
-          <Download className="w-4 h-4 shrink-0" />
-          Guardar contacto
-        </button>
+        {canSaveContact && (
+          <button
+            onClick={() => setModalOpen(true)}
+            className="w-full rounded-2xl border py-3.5 px-4 text-sm font-medium transition active:scale-[0.98] hover:opacity-90 shadow-sm flex items-center justify-center gap-2 mt-2"
+            style={{
+              backgroundColor: style.buttonBackground,
+              borderColor: style.buttonBorder,
+              color: style.buttonTextColor,
+            }}
+          >
+            <Download className="w-4 h-4 shrink-0" />
+            Guardar contacto
+          </button>
+        )}
 
         <CatalogSection slug={profile.slug} textColor={style.textColor} />
 
@@ -187,12 +192,14 @@ export default function ProfileView({ profile }: { profile: Profile }) {
         </p>
       </div>
 
-      <SaveContactModal
-        open={modalOpen}
-        onClose={closeModal}
-        profile={profile}
-        onSave={() => trackEvent(profile.slug, 'SAVE_CONTACT_CLICK')}
-      />
+      {canSaveContact && (
+        <SaveContactModal
+          open={modalOpen}
+          onClose={closeModal}
+          profile={profile}
+          onSave={() => trackEvent(profile.slug, 'SAVE_CONTACT_CLICK')}
+        />
+      )}
 
       {pdfViewer && (
         <PdfViewerModal url={pdfViewer.url} title={pdfViewer.title} onClose={() => setPdfViewer(null)} />

@@ -98,12 +98,12 @@ export default function CompanyDashboardPage() {
         <p className="text-sm text-neutral-500 mt-1">Panel de empresa · gestión centralizada de colaboradores</p>
       </div>
 
-      <div className="flex gap-1 border-b border-neutral-200">
+      <div className="flex gap-1 border-b border-neutral-200 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`text-sm px-4 py-2.5 -mb-px border-b-2 transition ${
+            className={`text-sm px-4 py-2.5 -mb-px border-b-2 transition whitespace-nowrap shrink-0 ${
               tab === t.id
                 ? 'border-black font-medium text-black'
                 : 'border-transparent text-neutral-500 hover:text-neutral-800'
@@ -116,7 +116,7 @@ export default function CompanyDashboardPage() {
 
       {tab === 'dashboard' && (
         <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white border border-neutral-200 rounded-2xl p-5">
               <p className="text-xs text-neutral-500">Colaboradores</p>
               <p className="text-3xl font-semibold mt-1">{data.collaborators.length}</p>
@@ -144,13 +144,13 @@ export default function CompanyDashboardPage() {
             <p className="text-xs text-neutral-500">
               Crea una cuenta para un miembro de tu equipo. Podrá iniciar sesión y crear su propio perfil.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 placeholder="Nombre"
                 value={newUser.name}
                 onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                 required
-                className="border border-neutral-300 rounded-xl px-3 py-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-black/10"
+                className="border border-neutral-300 rounded-xl px-3 py-2 text-sm sm:flex-1 outline-none focus:ring-2 focus:ring-black/10"
               />
               <input
                 placeholder="Email"
@@ -158,9 +158,9 @@ export default function CompanyDashboardPage() {
                 value={newUser.email}
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                 required
-                className="border border-neutral-300 rounded-xl px-3 py-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-black/10"
+                className="border border-neutral-300 rounded-xl px-3 py-2 text-sm sm:flex-1 outline-none focus:ring-2 focus:ring-black/10"
               />
-              <div className="flex-1">
+              <div className="sm:flex-1">
                 <PasswordInput
                   value={newUser.password}
                   onChange={(v) => setNewUser({ ...newUser, password: v })}
@@ -172,7 +172,7 @@ export default function CompanyDashboardPage() {
               <button
                 type="submit"
                 disabled={adding}
-                className="bg-black text-white rounded-xl px-5 font-medium text-sm hover:bg-neutral-800 transition disabled:opacity-50"
+                className="bg-black text-white rounded-xl px-5 py-2.5 sm:py-0 font-medium text-sm hover:bg-neutral-800 transition disabled:opacity-50 shrink-0"
               >
                 {adding ? 'Agregando...' : 'Agregar'}
               </button>
@@ -185,7 +185,8 @@ export default function CompanyDashboardPage() {
           </form>
 
           <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="text-left border-b border-neutral-200 bg-neutral-50">
                   <th className="py-3 px-4 font-medium text-neutral-500 text-xs uppercase tracking-wide">Colaborador</th>
@@ -227,6 +228,7 @@ export default function CompanyDashboardPage() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
@@ -248,7 +250,8 @@ export default function CompanyDashboardPage() {
             </div>
           </div>
           <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[440px] text-sm">
               <thead>
                 <tr className="text-left border-b border-neutral-200 bg-neutral-50">
                   <th className="py-3 px-4 font-medium text-neutral-500 text-xs uppercase tracking-wide">Colaborador</th>
@@ -273,6 +276,7 @@ export default function CompanyDashboardPage() {
                   ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
